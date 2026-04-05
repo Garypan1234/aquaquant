@@ -70,17 +70,26 @@ for stock in stocks:
 import requests
 import os
 
-BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN").strip()
-CHAT_ID = os.getenv("TELEGRAM_CHAT_ID").strip()
+BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+
+if BOT_TOKEN is None or CHAT_ID is None:
+    raise ValueError("Missing TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID")
+
+BOT_TOKEN = BOT_TOKEN.strip()
+CHAT_ID = CHAT_ID.strip()
 
 print("DEBUG TOKEN EXISTS:", BOT_TOKEN is not None)
-print("DEBUG CHAT_ID:", CHAT_ID)
+print("DEBUG CHAT_ID RAW:", repr(CHAT_ID))
 
 url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
 payload = {
     "chat_id": CHAT_ID,
-    "text": "🚀 Telegram FINAL TEST"
+    "text": "Telegram FINAL TEST"
 }
 
-response = requests.post(url, data=payload)
+print("DEBUG URL:", url)
+
+response = requests.post(url, data=payload, timeout=20)
+print("STATUS CODE:", response.status_code)
 print("TELEGRAM RESPONSE:", response.text)
