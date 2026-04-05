@@ -70,8 +70,8 @@ for stock in stocks:
 import requests
 import os
 
-BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN").strip()
+CHAT_ID = os.getenv("TELEGRAM_CHAT_ID").strip()
 
 print("DEBUG TOKEN EXISTS:", BOT_TOKEN is not None)
 print("DEBUG CHAT_ID:", CHAT_ID)
