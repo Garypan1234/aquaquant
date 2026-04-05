@@ -79,17 +79,12 @@ if BOT_TOKEN is None or CHAT_ID is None:
 BOT_TOKEN = BOT_TOKEN.strip()
 CHAT_ID = CHAT_ID.strip()
 
-print("DEBUG TOKEN EXISTS:", BOT_TOKEN is not None)
-print("DEBUG CHAT_ID RAW:", repr(CHAT_ID))
-
 url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
 payload = {
     "chat_id": CHAT_ID,
     "text": "Telegram FINAL TEST"
 }
 
-print("DEBUG URL:", url)
-
-response = requests.post(url, data=payload, timeout=20)
+response = requests.get(url, params=payload, timeout=20)
 print("STATUS CODE:", response.status_code)
 print("TELEGRAM RESPONSE:", response.text)
