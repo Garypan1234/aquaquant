@@ -79,10 +79,61 @@ if BOT_TOKEN is None or CHAT_ID is None:
 BOT_TOKEN = BOT_TOKEN.strip()
 CHAT_ID = CHAT_ID.strip()
 
+message = ""
+
+for stock in stocks:
+    data = yf.download(stock, period="3mo", auto_adjust=True, progress=False)
+
+    if data.empty:
+        message += f"\n=== {stock} ===\n没有拿到数据\n"
+        continue
+
+    close = data["Close"]
+
+    # 防止 yfinance 返回 DataFrame 而不是 Series
+    if isinstance(close, pd.DataFrame):
+        close = close.iloc[:, 0]
+
+    data = pd.DataFrame({"Close": close})
+    data["MA5"] = data["Close"].rolling(5).mean()
+    data["MA10"] = data["Close"].rolling(10).mean()
+    data["RSI"] = calculate_rsi(data["Close"])
+
+    data = data.dropna()
+
+    if len(data) < 2:
+        message += f"\n=== {stock} ===\n数据不足，无法分析\n"
+        continue
+
+    latest = data.iloc[-1]
+    prev = data.iloc[-2]
+
+    message += f"\n=== {stock} ===\n"
+    message += f"Close: {latest['Close']:.2f}\n"
+    message += f"MA5: {latest['MA5']:.2f}\n"
+    message += f"MA10: {latest['MA10']:.2f}\n"
+    message += f"RSI: {latest['RSI']:.2f}\n"
+
+    if prev["MA5"] < prev["MA10"] and latest["MA5"] > latest["MA10"]:
+        message += "🔥 金叉 -> 可以关注买入\n"
+    elif prev["MA5"] > prev["MA10"] and latest["MA5"] < latest["MA10"]:
+        message += "⚠️ 死叉 -> 注意风险\n"
+    elif latest["MA5"] > latest["MA10"]:
+        message += "趋势: MA5 在 MA10 上方\n"
+    else:
+        message += "趋势: MA5 在 MA10 下方\n"
+
+    if latest["RSI"] < 30:
+        message += "📉 RSI < 30 -> 超卖\n"
+    elif latest["RSI"] > 70:
+        message += "📈 RSI > 70 -> 超买\n"
+    else:
+        message += "RSI 正常\n"
+
 url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
 payload = {
     "chat_id": CHAT_ID,
-    "text": "Telegram FINAL TEST"
+    "text": message
 }
 
 response = requests.get(url, params=payload, timeout=20)
